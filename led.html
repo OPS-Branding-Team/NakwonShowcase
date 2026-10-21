@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/stage.css">
+<script>document.write('<link rel="stylesheet" href="css/stage.css?t='+Date.now()+'">');</script>
 </head>
 <body>
 <div id="viewport">
@@ -35,11 +35,8 @@
     <div id="blackout" class="on"></div>
   </div>
 </div>
-<script src="js/config.js"></script>
-<script src="js/content.js"></script>
-<script src="js/sync.js"></script>
-<script src="js/fx.js"></script>
-<script src="js/stage.js"></script>
-<script src="js/led.js"></script>
+<script>
+(function(){var t=Date.now();document.write('<script src="js/config.js?t='+t+'"><\/script>');document.write('<script src="js/content.js?t='+t+'"><\/script>');document.write('<script src="js/sync.js?t='+t+'"><\/script>');document.write('<script src="js/fx.js?t='+t+'"><\/script>');document.write('<script src="js/stage.js?t='+t+'"><\/script>');document.write('<script src="js/led.js?t='+t+'"><\/script>');})();
+</script>
 </body>
 </html>

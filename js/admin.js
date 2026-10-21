@@ -6,6 +6,8 @@
    ============================================================ */
 (function () {
   const S = window.SHOWCASE;
+  window.addEventListener('error', (e) => { const b = document.getElementById('banner'); if (b) { b.hidden = false; b.className = 'bad'; b.textContent = '화면 오류: ' + (e.message || e); } });
+  window.addEventListener('unhandledrejection', (e) => { const b = document.getElementById('banner'); if (b) { b.hidden = false; b.className = 'bad'; b.textContent = '오류: ' + ((e.reason && (e.reason.code || e.reason.message)) || e.reason); } });
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -35,7 +37,11 @@
   function send(patch, label) {
     lastSent = Date.now();
     toast(label || '송출');
-    return sync.update(patch).catch((e) => { console.error(e); banner('전송에 실패했어요. 네트워크 연결을 확인하세요.', true); });
+    const want = (state.rev || 0) + 1;
+    const p = sync.update(patch).catch((e) => { console.error(e); banner('<b>서버에 전송하지 못했어요</b> — ' + esc(e.code || e.message || e) + (String(e.code || e).indexOf('PERMISSION') >= 0 ? ' (Firebase 규칙 탭에서 ".write": true 로 바꾸고 게시하세요)' : ' (네트워크를 확인하세요)'), true); });
+    // 2.5초 뒤에도 서버 상태가 따라오지 않으면 화면에 알림 (서버가 거부했거나 끊긴 경우)
+    setTimeout(() => { if ((sync.state.rev || 0) < want) banner('<b>눌렀지만 서버에 반영되지 않았어요.</b> 연결/규칙을 확인하세요. (오른쪽 상단 "서버 쓰기" 표시 참고)', true); }, 2500);
+    return p;
   }
   function goLive(p) { cue = null; return send({ section: p.section, step: p.step }, '송출 ▶ ' + stepOf(p).label); }
   function pick(p) {
@@ -103,8 +109,11 @@
       const waiting = behind && Date.now() - (state.at || 0) > 1500;
       p.className = 'pill ' + (behind ? (waiting ? 'warn' : 'ok') : 'ok');
       p.querySelector('span').textContent = 'LED ' + presence.length + '대 · ' + (behind ? '반영 대기' : '반영 완료');
+      const olds = presence.filter((x) => (x.build || '') !== S.build).length;
+      if (olds) { p.className = 'pill warn'; p.querySelector('span').textContent += ' · 버전 다름 ' + olds + '대 (LED에서 Ctrl+Shift+R)'; }
     }
     $('#pRoom span').textContent = '방: ' + sync.room;
+    $('#pVer span').textContent = '빌드 ' + S.build;
     $('#pAt span').textContent = state.at ? '마지막 송출 ' + new Date(state.at).toTimeString().slice(0, 8) + (state.by && state.by !== sync.clientId ? ' (다른 기기)' : '') : '아직 송출 없음';
   }
 
@@ -140,6 +149,15 @@
   Sync.connect('admin').then((s) => {
     sync = s; window.__sync = s;
     if (s.mode === 'local') banner('<b>로컬 테스트 모드</b> — Firebase 설정(js/config.js)이 비어 있어요. 같은 브라우저의 LED 탭과만 연결됩니다. 원격 송출은 Firebase 설정 후 사용하세요.');
+    s.selfTest().then((r) => {
+      const w = $('#pWrite'); w.className = 'pill ' + (r.ok ? 'ok' : 'bad');
+      w.querySelector('span').textContent = r.ok ? '서버 쓰기 OK' : '서버 쓰기 실패 ' + (r.code || '');
+      if (!r.ok) banner('<b>서버에 쓸 수 없어요</b> — ' + esc(r.code || '') + ' (Firebase 규칙 탭 → ".write": true 로 바꾸고 <b>게시</b>)', true);
+    });
+    $('#bReset').onclick = () => {
+      if (!confirm('서버에 저장된 방송 상태를 초기화할까요? (블랙아웃 대기 화면으로 돌아갑니다)')) return;
+      cue = null; send({ section: 0, step: 0, blackout: false, guide: false, fog: 70, fx: { n: 0, type: '' } }, '상태 초기화');
+    };
     s.onState((st) => {
       const prev = state; state = st;
       if (cue && prev && (prev.section !== st.section || prev.step !== st.step)) cue = null;   // 라이브가 바뀌면 큐 초기화

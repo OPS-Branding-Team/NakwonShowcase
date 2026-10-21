@@ -324,6 +324,7 @@
   window.SHOWCASE = {
     title: TITLE, agenda: AGENDA, schedule: SCHEDULE, roadmap: ROADMAP, updates: UPDATES, upcoming: UPCOMING,
     qna: QNA, cards: CARDS, sections: SECTIONS,
+    build: 'v10-1022',
     stage: { w: 13920, h: 2160, seam: 6960 }
   };
 })();

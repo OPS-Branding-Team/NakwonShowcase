@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/admin.css">
+<script>document.write('<link rel="stylesheet" href="css/admin.css?t='+Date.now()+'">');</script>
 </head>
 <body>
 <div id="app">
@@ -20,6 +20,8 @@
       <div class="pill" id="pLed"><i></i><span>LED 확인 중</span></div>
       <div class="pill dim" id="pRoom"><span></span></div>
       <div class="pill dim" id="pAt"><span>—</span></div>
+      <div class="pill" id="pWrite"><i></i><span>쓰기 확인 중</span></div>
+      <div class="pill dim" id="pVer"><span></span></div>
     </div>
     <div class="seg" id="modeSeg" role="group" aria-label="송출 방식">
       <button data-m="instant" class="on">즉시 송출</button>
@@ -51,6 +53,7 @@
       <button class="fxb tog" id="bBlack">블랙아웃</button>
       <button class="fxb tog" id="bGuide">정렬 가이드</button>
       <button class="fxb tog" id="bLock">🔒 잠금</button>
+      <button class="fxb" id="bReset">상태 초기화</button>
     </div>
   </section>
 
@@ -60,9 +63,8 @@
     <button class="nav next" id="bNext"><small>다음</small><span id="lNext">—</span></button>
   </footer>
 </div>
-<script src="js/config.js"></script>
-<script src="js/content.js"></script>
-<script src="js/sync.js"></script>
-<script src="js/admin.js"></script>
+<script>
+(function(){var t=Date.now();document.write('<script src="js/config.js?t='+t+'"><\/script>');document.write('<script src="js/content.js?t='+t+'"><\/script>');document.write('<script src="js/sync.js?t='+t+'"><\/script>');document.write('<script src="js/admin.js?t='+t+'"><\/script>');})();
+</script>
 </body>
 </html>

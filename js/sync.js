@@ -76,6 +76,7 @@
       o._setPresence(Array.from(peers.entries()).map(([id, v]) => Object.assign({ id }, v)));
     }
     o.ack = (v) => { if (ch) ch.postMessage({ t: 'ack', id: clientId, v }); };
+    o.selfTest = () => Promise.resolve({ ok: true });
     if (role === 'led') {
       window.addEventListener('beforeunload', () => ch && ch.postMessage({ t: 'bye', id: clientId }));
     } else {
@@ -116,6 +117,7 @@
     };
 
     o.ack = (v) => { if (role === 'led') dbM.update(myPres, Object.assign({ at: Date.now() }, v)); };
+    o.selfTest = () => dbM.set(dbM.ref(db, 'rooms/' + room + '/ping'), { at: Date.now(), by: clientId }).then(() => ({ ok: true }), (e) => ({ ok: false, code: e.code || e.message }));
 
     if (role !== 'led') {
       dbM.onValue(presRoot, (s) => {

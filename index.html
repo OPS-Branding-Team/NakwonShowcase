@@ -35,8 +35,7 @@ a.c.r{border-color:#b51b1d}
   </div>
   <div class="m" id="info"></div>
 </main>
-<script src="js/config.js"></script>
-<script src="js/sync.js"></script>
+<script>(function(){var t=Date.now();['config','sync'].forEach(function(n){document.write('<script src="js/'+n+'.js?t='+t+'"><\/script>');});})();</script>
 <script>
   const q = location.search;
   document.getElementById('aAdmin').href = 'admin.html' + q;

@@ -23,10 +23,10 @@
         const rev = s.rev;
         autoT = setTimeout(() => { if (sync.state.rev === rev) sync.update({ section: s.section, step: s.step + 1 }); }, NakwonStage.SETTLE + cs.auto);
       }
-      if (s.rev !== lastRev) { lastRev = s.rev; sync.ack({ rev: s.rev, section: s.section, step: s.step }); }
+      if (s.rev !== lastRev) { lastRev = s.rev; sync.ack({ rev: s.rev, section: s.section, step: s.step, build: SHOWCASE.build }); }
     });
     // 하트비트 (로컬 모드 존재 확인용 / Firebase는 onDisconnect 사용)
-    setInterval(() => sync.ack({ rev: sync.state.rev, section: sync.state.section, step: sync.state.step }), 2500);
+    setInterval(() => sync.ack({ rev: sync.state.rev, section: sync.state.section, step: sync.state.step, build: SHOWCASE.build }), 2500);
     window.__sync = sync;
   });
 })();
