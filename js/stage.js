@@ -16,6 +16,7 @@
 
   const stage = $('#stage'), scenesEl = $('#scenes'), bgEl = $('#bg');
   document.body.classList.toggle('lite', LITE);
+  document.body.classList.toggle('pv', PREVIEW);
 
   /* ---------- 스케일 (13920×2160 → 창 크기에 맞춤) ---------- */
   function fit() {
@@ -171,7 +172,7 @@
           const gc = it.col - g.from + 1;
           const img = CAT_IMG[it.cat];
           const st = 'grid-column:' + gc + ';grid-row:' + (it.r1 + 1) + '/' + (it.r2 + 2) + ';--d:' + (1.0 + (it.col - g.from) * 0.08 + it.r1 * 0.04) + 's' +
-            (img ? ';--img:url(\'assets/' + img + '\');--ip:' + ((it.col * 37) % 100) + '% ' + ((it.col * 53) % 100) + '%' : '');
+            (img ? ';--img:url(\'' + new URL('assets/' + img, document.baseURI).href + '\');--ip:' + ((it.col * 37) % 100) + '% ' + ((it.col * 53) % 100) + '%' : '');
           cells += '<div class="cell cat-' + it.cat + ' sz-' + it.size + ' rv" data-col="' + it.col + '" style="' + st + '">' +
             (it.kicker ? '<div class="k">' + esc(it.kicker) + '</div>' : '') + '<div class="t">' + esc(it.text) + '</div></div>';
         });
@@ -455,6 +456,7 @@
   function popFlash() { flashEl.classList.remove('go', 'fast'); void flashEl.offsetWidth; flashEl.classList.add('go', 'fast'); }
 
   function lowerOne(p) {       // 설명이 사라지고, 화면 가득했던 박스가 원래 자리로 줄어듦
+    if (PREVIEW) { p.inst.root.remove(); return; }
     const root = p.inst.root;
     root.classList.remove('pop-fade'); root.classList.add('pop-out');
     setTimeout(() => root.remove(), 330);
@@ -475,6 +477,7 @@
     const my = ++popSeq;
     const inst = VIEWS[st.view].build(st);
     const old = pop; pop = null;
+    if (PREVIEW) { if (old) old.inst.root.remove(); inst.root.classList.add('in'); popupsEl.appendChild(inst.root); pop = { key, idx: st.idx, inst }; return; }
     if (old) lowerOne(old);
     const show = (g) => {
       if (my !== popSeq) { if (g) g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: 'forwards' }).onfinish = () => g.remove(); return; }
@@ -496,7 +499,7 @@
   }
 
   function pickType(base, immediate) {
-    if (immediate || !cur) return 'none';
+    if (PREVIEW || immediate || !cur) return 'none';
     if (cur.view === 'black' || base.view === 'black') return 'none';     // 블랙아웃 ↔ 타이틀은 전환 없이 (타이틀이 자체 연출로 시작)
     if (secOf(base) === 'qna') return 'alarm';                              // Q&A는 경보등
     return cur.sec !== secOf(base) ? 'door' : 'sweep';
@@ -504,7 +507,7 @@
 
   function showStep(st, immediate) {
     const now = Date.now();
-    if (!immediate && now < busyUntil) {               // 전환 중이면 마지막 요청만 기억했다가 끝나고 처리
+    if (!immediate && !PREVIEW && now < busyUntil) {               // 전환 중이면 마지막 요청만 기억했다가 끝나고 처리
       pending = st; clearTimeout(pendTimer);
       pendTimer = setTimeout(() => { const p = pending; pending = null; if (p) showStep(p, false); }, busyUntil - now + 40);
       return;

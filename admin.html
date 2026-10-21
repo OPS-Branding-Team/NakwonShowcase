@@ -32,11 +32,12 @@
 
   <section class="preview">
     <div class="pv-wrap">
-      <iframe id="pv" src="led.html?preview=1" title="LED 미리보기" tabindex="-1"></iframe>
+      <iframe id="pv" title="LED 미리보기" tabindex="-1"></iframe>
+      <div class="pv-off" id="pvOff"></div>
       <div class="pv-seam"></div>
       <div class="pv-badge" id="pvBadge">ON AIR</div>
     </div>
-    <div class="pv-meta"><span>◀ 좌면 6960</span><span>우면 6960 ▶</span></div>
+    <div class="pv-meta"><span>◀ 좌면 6960</span><button id="pvToggle" class="pvt" type="button">미리보기 끄기</button><span>우면 6960 ▶</span></div>
   </section>
 
   <main id="main">

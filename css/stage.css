@@ -606,3 +606,8 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 /* 업데이트/추가 예정 전체 보기: 이름·태그가 이미지 상단에 */
 .ov .tl .tx, .tl.grow .tx { top: 50px; bottom: auto; }
 .ov .tl::after, .tl.grow::after { background: linear-gradient(0deg, rgba(255, 255, 255, .06), transparent 24%, rgba(6, 3, 4, .12) 48%, rgba(6, 3, 4, .9) 100%); }
+
+
+/* 관리자 안 미리보기(?preview=1): 애니메이션/전환 없이 가볍게 */
+.pv *, .pv *::before, .pv *::after { animation: none !important; transition: none !important; }
+.pv .t-clear, .pv #sweep, .pv #doors, .pv #beacon, .pv #alarm, .pv #flash, .pv #surge, .pv .scene.out { display: none !important; }

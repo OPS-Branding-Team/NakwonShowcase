@@ -29,9 +29,36 @@
 
   /* ---------- 미리보기(iframe) ---------- */
   const pv = $('#pv');
-  let pvReady = false;
-  addEventListener('message', (e) => { if (e.data && e.data.t === 'ready') { pvReady = true; pushPreview(); } });
-  function pushPreview() { if (pvReady && state && pv.contentWindow) pv.contentWindow.postMessage({ t: 'state', s: state }, '*'); }
+  const qs = new URLSearchParams(location.search);
+  const isTablet = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let pvPref = localStorage.getItem('nakwon:pv');                 // 'on' | 'off' | null(처음)
+  if (qs.get('pv') === '0') pvPref = 'off'; if (qs.get('pv') === '1') pvPref = 'on';
+  // 짧은 시간에 페이지가 계속 다시 시작되면(메모리 부족으로 강제 종료 → 자동 재시도) 미리보기를 자동으로 끈다
+  let crashLoop = false;
+  try {
+    const k = 'nakwon:loads', now = Date.now();
+    const arr = JSON.parse(sessionStorage.getItem(k) || '[]').filter((t) => now - t < 40000); arr.push(now);
+    sessionStorage.setItem(k, JSON.stringify(arr));
+    if (arr.length >= 3) { crashLoop = true; pvPref = 'off'; localStorage.setItem('nakwon:pv', 'off'); }
+  } catch (e) { }
+  let pvOn = pvPref ? pvPref !== 'off' : !isTablet;                // 터치 기기는 기본 꺼짐
+  let pvT = 0;
+  addEventListener('message', (e) => { if (e.data && e.data.t === 'ready') pushPreview(true); });
+  pv.addEventListener('load', () => pushPreview(true));
+  function pushPreview(now) {          // 연타해도 미리보기에는 마지막 상태만 (80ms 모아서) 전달
+    if (!pvOn || !state) return;
+    clearTimeout(pvT);
+    pvT = setTimeout(() => { try { if (pv.contentWindow) pv.contentWindow.postMessage({ t: 'state', s: state }, '*'); } catch (e) { } }, now ? 0 : 80);
+  }
+  function setPreview(on) {
+    pvOn = on; localStorage.setItem('nakwon:pv', on ? 'on' : 'off');
+    $('#pvToggle').textContent = on ? '미리보기 끄기' : '미리보기 켜기';
+    document.querySelector('.pv-wrap').classList.toggle('off', !on);
+    pv.src = on ? 'led.html?preview=1&t=' + Date.now() : 'about:blank';
+  }
+  $('#pvToggle').onclick = () => setPreview(!pvOn);
+  setPreview(pvOn);
+  if (crashLoop) setTimeout(() => banner('<b>페이지가 반복해서 다시 시작되어 미리보기를 자동으로 껐어요.</b> (태블릿 메모리 부족) 송출에는 영향 없어요. 필요하면 "미리보기 켜기"를 누르세요.', false), 300);
 
   /* ---------- 송출 ---------- */
   function send(patch, label) {
@@ -90,6 +117,7 @@
     document.body.classList.toggle('locked', locked);
     const fog = $('#fog'); if (document.activeElement !== fog) fog.value = state.fog == null ? 70 : state.fog;
     $('#fogv').textContent = fog.value;
+    $('#pvOff').innerHTML = '<b>' + esc(ls.label) + '</b><small>' + esc(S.sections[L.section].label) + (state.blackout ? ' · 블랙아웃 중' : '') + '</small>';
     // 배지
     $('#pvBadge').textContent = state.blackout ? 'BLACKOUT' : 'ON AIR';
     $('#pvBadge').classList.toggle('black', !!state.blackout);
